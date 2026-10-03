@@ -112,9 +112,15 @@ if (isActionAccessible($guid, $connection2, '/modules/Stream/posts_manage_edit.p
                 
                 // Record file tracking
                 if (!empty($fileMetaData) && !empty($streamPostAttachmentID)) {
-                    $gibbonFileID = $container->get(FileHandler::class)->recordFileUpload($fileMetaData, 'streamPostAttachment', $streamPostAttachmentID, 'attachment');
-                    
+                    $fileHandler = $container->get(FileHandler::class);
+                    $gibbonFileID = $fileHandler->recordFileUpload($fileMetaData, 'streamPostAttachment', $streamPostAttachmentID, 'attachment');
                     if (empty($gibbonFileID)) {
+                        $partialFail = true;
+                    }
+
+                    $thumbRelative = is_string($thumbnail) ? str_replace($absolutePath.'/', '', $thumbnail) : '';
+                    $thumbMeta = $thumbRelative !== '' ? $fileUploader->getFileMetaData($thumbRelative) : null;
+                    if (!empty($thumbMeta) && empty($fileHandler->recordFileUpload($thumbMeta, 'streamPostAttachment', $streamPostAttachmentID, 'thumbnail'))) {
                         $partialFail = true;
                     }
                 }

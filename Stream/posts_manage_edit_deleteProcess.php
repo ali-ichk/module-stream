@@ -36,9 +36,7 @@ if (isActionAccessible($guid, $connection2, '/modules/Stream/posts_manage_edit.p
     exit;
 } else {
     // Proceed!
-    $postAttachmentGateway = $container->get(PostAttachmentGateway::class);
-    $absolutePath = $session->get('absolutePath');
-  
+    $postAttachmentGateway = $container->get(PostAttachmentGateway::class); 
     // Validate the required values are present
     if (empty($streamPostID) || empty($streamPostAttachmentID)) {
         $URL .= '&return=error1';
@@ -54,13 +52,9 @@ if (isActionAccessible($guid, $connection2, '/modules/Stream/posts_manage_edit.p
         exit;
     }
 
-    // Delete the tracked attachment file via FileHandler
-    $deleted = $container->get(FileHandler::class)->deleteFile('streamPostAttachment', $streamPostAttachmentID, 'attachment');
-
-    // Delete the thumbnail file directly (not tracked via FileHandler)
-    if (!empty($attachment['thumbnail'])) {
-        @unlink($absolutePath.'/'.$attachment['thumbnail']);
-    }
+    $fileHandler = $container->get(FileHandler::class);
+    $fileHandler->deleteFile('streamPostAttachment', $streamPostAttachmentID, 'attachment');
+    $fileHandler->deleteFile('streamPostAttachment', $streamPostAttachmentID, 'thumbnail');
 
     // Delete the record
     $deleted = $postAttachmentGateway->delete($streamPostAttachmentID);

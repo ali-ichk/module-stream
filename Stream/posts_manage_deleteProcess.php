@@ -41,7 +41,6 @@ if (isActionAccessible($guid, $connection2, '/modules/Stream/posts_manage_delete
     // Proceed!
     $postGateway = $container->get(PostGateway::class);
     $postAttachmentGateway = $container->get(PostAttachmentGateway::class);
-    $absolutePath = $session->get('absolutePath');
     $values = $postGateway->getByID($streamPostID);
 
     if (empty($values)) {
@@ -52,11 +51,10 @@ if (isActionAccessible($guid, $connection2, '/modules/Stream/posts_manage_delete
 
     $attachments = $postAttachmentGateway->selectBy(['streamPostID' => $streamPostID], ['streamPostAttachmentID', 'thumbnail'])->fetchAll();
     
+    $fileHandler = $container->get(FileHandler::class);
     foreach ($attachments as $attachment) {
-        $fileDeleted = $container->get(FileHandler::class)->deleteFile('streamPostAttachment', $attachment['streamPostAttachmentID'], 'attachment');
-        if (!empty($attachment['thumbnail'])) {
-            @unlink($absolutePath.'/'.$attachment['thumbnail']);
-        }
+        $fileHandler->deleteFile('streamPostAttachment', $attachment['streamPostAttachmentID'], 'attachment');
+        $fileHandler->deleteFile('streamPostAttachment', $attachment['streamPostAttachmentID'], 'thumbnail');
     }
 
     $deleted = $postAttachmentGateway->deleteWhere(['streamPostID' => $streamPostID]);
