@@ -53,8 +53,14 @@ if (isActionAccessible($guid, $connection2, '/modules/Stream/posts_manage_edit.p
     }
 
     $fileHandler = $container->get(FileHandler::class);
-    $fileHandler->deleteFile('streamPostAttachment', $streamPostAttachmentID, 'attachment');
-    $fileHandler->deleteFile('streamPostAttachment', $streamPostAttachmentID, 'thumbnail');
+    foreach (['attachment', 'thumbnail'] as $column) {
+        $fileHandler->deleteFile('streamPostAttachment', $streamPostAttachmentID, $column);
+
+        $realPath = $fileHandler->resolveStoredPath($session->get('absolutePath'), $attachment[$column] ?? '');
+        if (!empty($realPath)) {
+            unlink($realPath);
+        }
+    }
 
     // Delete the record
     $deleted = $postAttachmentGateway->delete($streamPostAttachmentID);
